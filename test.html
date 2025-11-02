@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC Authenticator - Test Suite</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff88;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: rgba(0, 50, 100, 0.2);
+            border: 1px solid #00d4ff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .test-button {
+            background: #00d4ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .test-result {
+            background: #000;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #00ff88;
+        }
+        .error {
+            border-left-color: #ff4444;
+            color: #ff4444;
+        }
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #00d4ff;
+            color: #00ff88;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>▣ NFC Authenticator - Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Basic Encryption/Decryption Test</h2>
+        <p>Test the core encryption functionality:</p>
+        <button class="test-button" onclick="testBasicEncryption()">Run Basic Test</button>
+        <div id="basicTestResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Time Window Test</h2>
+        <p>Test encryption with different time windows:</p>
+        <button class="test-button" onclick="testTimeWindows()">Test Time Sensitivity</button>
+        <div id="timeTestResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Custom Message Test</h2>
+        <p>Test with your own message:</p>
+        <textarea id="customMessage" placeholder="Enter your message here..." rows="3"></textarea><br>
+        <button class="test-button" onclick="testCustomMessage()">Encrypt Custom Message</button>
+        <div id="customTestResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>URL Test</h2>
+        <p>Test URL encryption and detection:</p>
+        <input type="url" id="urlInput" placeholder="https://example.com" value="https://github.com">
+        <button class="test-button" onclick="testURLEncryption()">Encrypt URL</button>
+        <div id="urlTestResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Format Validation Test</h2>
+        <p>Test encrypted data format validation:</p>
+        <button class="test-button" onclick="testFormatValidation()">Test Format Validation</button>
+        <div id="formatTestResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Generated Test Codes</h2>
+        <p>Use these codes to test manual input in the main app:</p>
+        <button class="test-button" onclick="generateTestCodes()">Generate Test Codes</button>
+        <div id="testCodesResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Performance Test</h2>
+        <p>Test encryption/decryption performance:</p>
+        <button class="test-button" onclick="testPerformance()">Run Performance Test</button>
+        <div id="performanceTestResult"></div>
+    </div>
+
+    <script src="crypto.js"></script>
+    <script>
+        // Initialize crypto engine
+        const crypto = new CryptoEngine();
+
+        function displayResult(elementId, content, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${isError ? 'error' : ''}">${content}</div>`;
+        }
+
+        function testBasicEncryption() {
+            try {
+                const testMessage = "Hello, NFC Authenticator!";
+                const encrypted = crypto.encrypt(testMessage);
+                const decrypted = crypto.decrypt(encrypted);
+                
+                const result = `
+                    <strong>▣ Basic Encryption Test PASSED</strong><br>
+                    Original: ${testMessage}<br>
+                    Encrypted: ${encrypted}<br>
+                    Decrypted: ${decrypted}<br>
+                    Match: ${testMessage === decrypted ? '▣ YES' : '● NO'}
+                `;
+                displayResult('basicTestResult', result);
+            } catch (error) {
+                displayResult('basicTestResult', `● Test FAILED: ${error.message}`, true);
+            }
+        }
+
+        function testTimeWindows() {
+            try {
+                const testMessage = "Time sensitive message";
+                
+                // Test current time
+                const currentEncrypted = crypto.encrypt(testMessage);
+                const currentDecrypted = crypto.decrypt(currentEncrypted);
+                
+                // Test with past time seed (should still work within window)
+                const pastTimeSeed = crypto.getTimeSeed() - 1;
+                const pastEncrypted = crypto.encrypt(testMessage, pastTimeSeed);
+                const pastDecrypted = crypto.decrypt(pastEncrypted);
+                
+                const result = `
+                    <strong>▣ Time Window Test Results</strong><br>
+                    Current Time Seed: ${crypto.getFormattedTimeSeed()}<br>
+                    Current Test: ${testMessage === currentDecrypted ? '▣ PASS' : '● FAIL'}<br>
+                    Past Window Test: ${testMessage === pastDecrypted ? '▣ PASS' : '● FAIL'}<br>
+                    Time Window: ${crypto.timeWindow / 1000 / 60} minutes
+                `;
+                displayResult('timeTestResult', result);
+            } catch (error) {
+                displayResult('timeTestResult', `● Test FAILED: ${error.message}`, true);
+            }
+        }
+
+        function testCustomMessage() {
+            try {
+                const message = document.getElementById('customMessage').value;
+                if (!message) {
+                    displayResult('customTestResult', '● Please enter a message', true);
+                    return;
+                }
+                
+                const encrypted = crypto.encrypt(message);
+                const decrypted = crypto.decrypt(encrypted);
+                
+                const result = `
+                    <strong>▣ Custom Message Test</strong><br>
+                    Original: ${message}<br>
+                    Encrypted: ${encrypted}<br>
+                    Decrypted: ${decrypted}<br>
+                    Success: ${message === decrypted ? '▣ YES' : '● NO'}<br>
+                    <em>Copy the encrypted code to test in the main app!</em>
+                `;
+                displayResult('customTestResult', result);
+            } catch (error) {
+                displayResult('customTestResult', `● Test FAILED: ${error.message}`, true);
+            }
+        }
+
+        function testURLEncryption() {
+            try {
+                const url = document.getElementById('urlInput').value;
+                if (!url) {
+                    displayResult('urlTestResult', '● Please enter a URL', true);
+                    return;
+                }
+                
+                const encrypted = crypto.encrypt(url);
+                const decrypted = crypto.decrypt(encrypted);
+                
+                // Check if it's a valid URL
+                let isValidURL = false;
+                try {
+                    new URL(url);
+                    isValidURL = true;
+                } catch (e) {
+                    isValidURL = false;
+                }
+                
+                const result = `
+                    <strong>▣ URL Encryption Test</strong><br>
+                    URL: <a href="${url}" target="_blank" style="color: #00d4ff;">${url}</a><br>
+                    Valid URL: ${isValidURL ? '▣ YES' : '● NO'}<br>
+                    Encrypted: ${encrypted}<br>
+                    Decrypted: ${decrypted}<br>
+                    Success: ${url === decrypted ? '▣ YES' : '● NO'}
+                `;
+                displayResult('urlTestResult', result);
+            } catch (error) {
+                displayResult('urlTestResult', `● Test FAILED: ${error.message}`, true);
+            }
+        }
+
+        function testFormatValidation() {
+            const testCases = [
+                { data: 'NFC_SGVsbG8gV29ybGQ=', expected: true, name: 'Valid Format' },
+                { data: 'InvalidFormat', expected: false, name: 'Invalid Format' },
+                { data: '', expected: false, name: 'Empty String' },
+                { data: 'NFC_', expected: false, name: 'Only Prefix' },
+                { data: 'NFC_Invalid!@#', expected: false, name: 'Invalid Characters' }
+            ];
+            
+            let results = '<strong>Format Validation Results:</strong><br>';
+            testCases.forEach(test => {
+                const result = crypto.isValidEncryptedFormat(test.data);
+                const status = result === test.expected ? '▣' : '●';
+                results += `${status} ${test.name}: ${result} (expected ${test.expected})<br>`;
+            });
+            
+            displayResult('formatTestResult', results);
+        }
+
+        function generateTestCodes() {
+            const testMessages = [
+                'Secret message #1',
+                'https://example.com',
+                'Meeting at 3 PM',
+                'Password: SecureP@ss123',
+                'Emergency contact: +1234567890'
+            ];
+            
+            let results = '<strong>Generated Test Codes:</strong><br><br>';
+            testMessages.forEach((message, index) => {
+                const encrypted = crypto.encrypt(message);
+                results += `
+                    <strong>Test ${index + 1}:</strong> "${message}"<br>
+                    <code style="background: #2a2a2a; padding: 5px; word-break: break-all;">${encrypted}</code><br><br>
+                `;
+            });
+            
+            results += '<em>Copy any encrypted code above to test manual decryption in the main app.</em>';
+            displayResult('testCodesResult', results);
+        }
+
+        function testPerformance() {
+            const testMessage = 'Performance test message for encryption/decryption timing analysis';
+            const iterations = 100;
+            
+            // Encryption performance
+            const encryptStart = performance.now();
+            const encryptedCodes = [];
+            for (let i = 0; i < iterations; i++) {
+                encryptedCodes.push(crypto.encrypt(testMessage + i));
+            }
+            const encryptEnd = performance.now();
+            
+            // Decryption performance
+            const decryptStart = performance.now();
+            const decryptedMessages = [];
+            for (let i = 0; i < iterations; i++) {
+                decryptedMessages.push(crypto.decrypt(encryptedCodes[i]));
+            }
+            const decryptEnd = performance.now();
+            
+            const encryptTime = encryptEnd - encryptStart;
+            const decryptTime = decryptEnd - decryptStart;
+            
+            const result = `
+                <strong>▣ Performance Test Results</strong><br>
+                Iterations: ${iterations}<br>
+                Encryption Time: ${encryptTime.toFixed(2)}ms (${(encryptTime/iterations).toFixed(2)}ms avg)<br>
+                Decryption Time: ${decryptTime.toFixed(2)}ms (${(decryptTime/iterations).toFixed(2)}ms avg)<br>
+                Total Time: ${(encryptTime + decryptTime).toFixed(2)}ms<br>
+                Success Rate: ${decryptedMessages.filter((msg, i) => msg === testMessage + i).length}/${iterations}
+            `;
+            displayResult('performanceTestResult', result);
+        }
+
+        // Auto-run basic test on load
+        window.addEventListener('load', () => {
+            console.log('NFC Authenticator Test Suite Loaded');
+            testBasicEncryption();
+        });
+    </script>
+</body>
+</html>

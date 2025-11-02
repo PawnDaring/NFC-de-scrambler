@@ -1,0 +1,19 @@
+{
+  "name": "authenticator",
+  "version": "1.0.0",
+  "description": "A sophisticated personal encryption and authentication system with NFC support and a sleek hacker-inspired interface.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "live-server --port=3000 --host=localhost --open=/index.html --wait=200",
+    "start": "live-server --port=8080 --host=localhost --open=/index.html",
+    "test": "live-server --port=3001 --host=localhost --open=/test.html --wait=200",
+    "build": "echo \"Static files ready for deployment\"",
+    "serve": "live-server --port=8080 --host=0.0.0.0"
+  },
+  "keywords": ["nfc", "authentication", "encryption", "security", "web-nfc", "hacker"],
+  "author": "James",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC Authenticator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="glass-panel">
+            <div class="header">
+                <h1 class="title">NFC AUTHENTICATOR</h1>
+                <div class="status-indicator" id="statusIndicator">
+                    <div class="pulse"></div>
+                    <span>READY</span>
+                </div>
+            </div>
+
+            <!-- Mode Toggle -->
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="decryptBtn">DECRYPT</button>
+                <button class="mode-btn" id="encryptBtn">ENCRYPT</button>
+            </div>
+
+            <!-- Animated Character Display -->
+            <div class="character-display" id="characterDisplay">
+                <div class="matrix-rain">
+                    <span class="char">█</span>
+                    <span class="char">▓</span>
+                    <span class="char">░</span>
+                    <span class="char">▒</span>
+                    <span class="char">█</span>
+                    <span class="char">▓</span>
+                    <span class="char">░</span>
+                    <span class="char">▒</span>
+                </div>
+                <div class="time-seed" id="timeSeed">TIME SEED: <span id="seedValue">0x00000000</span></div>
+            </div>
+
+            <!-- Decrypt Mode -->
+            <div class="mode-panel" id="decryptMode">
+                <div class="nfc-scanner" id="nfcScanner">
+                    <div class="nfc-icon">◉</div>
+                    <div class="scan-animation"></div>
+                    <p class="scan-text">TAP NFC TAG TO SCAN</p>
+                </div>
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <div class="input-section">
+                    <label for="encryptedInput">ENCRYPTED CODE:</label>
+                    <input type="text" id="encryptedInput" placeholder="Enter encrypted code manually...">
+                    <button class="action-btn" id="decryptBtn2">DECRYPT</button>
+                </div>
+
+                <div class="output-section" id="outputSection" style="display: none;">
+                    <h3>DECRYPTED MESSAGE:</h3>
+                    <div class="output-box" id="outputBox"></div>
+                </div>
+            </div>
+
+            <!-- Encrypt Mode -->
+            <div class="mode-panel" id="encryptMode" style="display: none;">
+                <div class="input-section">
+                    <label for="messageInput">MESSAGE/URL TO ENCRYPT:</label>
+                    <textarea id="messageInput" placeholder="Enter your message or URL here..."></textarea>
+                    <button class="action-btn" id="encryptBtn2">ENCRYPT</button>
+                </div>
+
+                <div class="output-section" id="encryptOutputSection" style="display: none;">
+                    <h3>ENCRYPTED CODE:</h3>
+                    <div class="output-box" id="encryptOutputBox"></div>
+                    <button class="copy-btn" id="copyBtn">COPY TO CLIPBOARD</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Model Container (for future use) -->
+        <div class="model-container" id="modelContainer">
+            <!-- Three.js 3D model will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Decryption Animation Overlay -->
+    <div class="decryption-overlay" id="decryptionOverlay">
+        <div class="decryption-panel">
+            <h2 class="decryption-title">DECRYPTING MESSAGE...</h2>
+            
+            <div class="decryption-stages" id="decryptionStages">
+                <div class="decryption-stage" id="stage1">
+                    <span class="stage-label">VALIDATING FORMAT</span>
+                    <span class="stage-status">Standby</span>
+                </div>
+                <div class="decryption-stage" id="stage2">
+                    <span class="stage-label">GENERATING TIME KEYS</span>
+                    <span class="stage-status">Standby</span>
+                </div>
+                <div class="decryption-stage" id="stage3">
+                    <span class="stage-label">ATTEMPTING DECRYPTION</span>
+                    <span class="stage-status">Standby</span>
+                </div>
+                <div class="decryption-stage" id="stage4">
+                    <span class="stage-label">VERIFYING CHECKSUM</span>
+                    <span class="stage-status">Standby</span>
+                </div>
+                <div class="decryption-stage" id="stage5">
+                    <span class="stage-label">EXTRACTING MESSAGE</span>
+                    <span class="stage-status">Standby</span>
+                </div>
+            </div>
+
+            <div class="decryption-code" id="decryptionCode">
+                Encrypted data will appear here...
+            </div>
+
+            <div class="decryption-result" id="decryptionResult">
+                Decrypted message will appear here...
+            </div>
+
+            <button class="close-decrypt-btn" id="closeDecryptBtn" style="display: none;">
+                CLOSE
+            </button>
+        </div>
+    </div>
+
+    <script src="crypto.js"></script>
+    <script src="nfc-handler.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
