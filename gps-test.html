@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Test - NFC Authenticator</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #ff6600;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: rgba(255, 102, 0, 0.1);
+            border: 2px solid #ff6600;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .test-btn {
+            background: #ff6600;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #333;
+            color: #ff6600;
+            border: 2px solid #ff6600;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>▣ GPS Coordinate Detection Test</h1>
+    
+    <div class="test-section">
+        <h2>Sample GPS Coordinates to Test:</h2>
+        <p>Copy and paste these into the main app to trigger GPS popup:</p>
+        
+        <ul>
+            <li><strong>New York:</strong> 40.7128, -74.0060</li>
+            <li><strong>London:</strong> 51.5074, -0.1278</li>
+            <li><strong>Tokyo:</strong> 35.6762, 139.6503</li>
+            <li><strong>Sydney:</strong> -33.8688, 151.2093</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Different Formats:</h2>
+        <textarea id="testInput" placeholder="Paste or type coordinates here to test detection..."></textarea>
+        <button class="test-btn" onclick="testCoordinates()">TEST DETECTION</button>
+        <button class="test-btn" onclick="openGPSPopup()">OPEN GPS POPUP</button>
+        <div id="testResults" style="margin-top: 10px; font-weight: bold;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Supported Coordinate Formats:</h2>
+        <ul>
+            <li><strong>Decimal Degrees:</strong> 40.7128, -74.0060</li>
+            <li><strong>With Labels:</strong> Lat: 40.7128, Lon: -74.0060</li>
+            <li><strong>Degrees Symbol:</strong> 40.7128°N, 74.0060°W</li>
+            <li><strong>GPS Format:</strong> N40.7128 W74.0060</li>
+        </ul>
+    </div>
+    
+    <script src="gps-integration.js"></script>
+    <script>
+        function testCoordinates() {
+            const input = document.getElementById('testInput').value;
+            const results = document.getElementById('testResults');
+            
+            if (!input.trim()) {
+                results.textContent = 'Please enter coordinates to test';
+                return;
+            }
+            
+            // Use the detection function
+            const gpsIntegration = new GPSIntegration();
+            const coordinates = gpsIntegration.detectCoordinates(input);
+            
+            if (coordinates.length > 0) {
+                results.innerHTML = `▣ DETECTED: ${coordinates.join(', ')}`;
+                results.style.color = '#00ff00';
+            } else {
+                results.textContent = '● NO COORDINATES DETECTED';
+                results.style.color = '#ff0000';
+            }
+        }
+        
+        function openGPSPopup() {
+            const input = document.getElementById('testInput').value;
+            let coords = '40.7128, -74.0060'; // Default NYC
+            
+            if (input.trim()) {
+                const gpsIntegration = new GPSIntegration();
+                const detected = gpsIntegration.detectCoordinates(input);
+                if (detected.length > 0) {
+                    coords = detected[0];
+                }
+            }
+            
+            // Open GPS popup
+            const popupFeatures = 'width=450,height=600,scrollbars=yes,resizable=yes';
+            const popup = window.open('./gps-module/gps-popup.html', 'GPSTest', popupFeatures);
+            
+            if (popup) {
+                popup.addEventListener('load', () => {
+                    popup.postMessage({
+                        type: 'GPS_COORDINATES',
+                        coordinates: coords
+                    }, '*');
+                });
+                
+                // Fallback
+                setTimeout(() => {
+                    if (popup && !popup.closed) {
+                        popup.postMessage({
+                            type: 'GPS_COORDINATES',
+                            coordinates: coords
+                        }, '*');
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Auto-test with sample coordinates
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('testInput').value = '40.7128, -74.0060';
+        });
+    </script>
+</body>
+</html>
